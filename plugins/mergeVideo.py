@@ -20,8 +20,8 @@ from PIL import Image
 async def mergeNow(c: Client, cb: CallbackQuery, new_file_name: str):
     omess = cb.message.reply_to_message
     # print(omess.id)
-    vid_list = list()
-    sub_list = list()
+    vid_list = []
+    sub_list = []
     sIndex = 0
     await cb.message.edit("⭕ Processing...")
     duration = 0
@@ -65,7 +65,6 @@ async def mergeNow(c: Client, cb: CallbackQuery, new_file_name: str):
             time.sleep(5)
         except UnknownError as e:
             print(e)
-            pass
         except Exception as downloadErr:
             print(f"Failed to download Error: {downloadErr}")
             queueDB.get(cb.from_user.id)["video"].remove(i.id)
@@ -98,12 +97,12 @@ async def mergeNow(c: Client, cb: CallbackQuery, new_file_name: str):
             await cb.message.edit("⚠️ Video is corrupted")
             return
 
-    _cache = list()
-    for i in range(len(vid_list)):
-        if vid_list[i] not in _cache:
-            _cache.append(vid_list[i])
+    _cache = []
+    for vid in vid_list:
+        if vid not in _cache:
+            _cache.append(vid)
     vid_list = _cache
-    await cb.message.edit(f"🔀 Trying to merge videos ...")
+    await cb.message.edit("🔀 Trying to merge videos ...")
     with open(input_, "w") as _list:
         _list.write("\n".join(vid_list))
     merged_video_path = await MergeVideo(

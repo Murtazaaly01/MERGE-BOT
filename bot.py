@@ -166,13 +166,15 @@ async def start_handler(c: Client, m: Message):
 
 @mergeApp.on_message((filters.document | filters.video) & filters.private)
 async def video_handler(c: Client, m: Message):
-    if m.from_user.id != Config.OWNER:
-        if await database.allowedUser(uid=m.from_user.id) is False:
-            res = await m.reply_text(
-                text=f"Hi **{m.from_user.first_name}**\n\n 🛡️ Unfortunately you can't use me\n\n**Contact: 🈲 @{Config.OWNER_USERNAME}** ",
-                quote=True,
-            )
-            return
+    if (
+        m.from_user.id != Config.OWNER
+        and await database.allowedUser(uid=m.from_user.id) is False
+    ):
+        res = await m.reply_text(
+            text=f"Hi **{m.from_user.first_name}**\n\n 🛡️ Unfortunately you can't use me\n\n**Contact: 🈲 @{Config.OWNER_USERNAME}** ",
+            quote=True,
+        )
+        return
     input_ = f"downloads/{str(m.from_user.id)}/input.txt"
     if os.path.exists(input_):
         await m.reply_text("Sorry Bro,\nAlready One process in Progress!\nDon't Spam.")
@@ -188,13 +190,18 @@ async def video_handler(c: Client, m: Message):
             reply_markup=InlineKeyboardMarkup(
                 [
                     [
-                        InlineKeyboardButton("✅ Yes", callback_data=f"rclone_save"),
-                        InlineKeyboardButton("❌ No", callback_data="rclone_discard"),
+                        InlineKeyboardButton(
+                            "✅ Yes", callback_data="rclone_save"
+                        ),
+                        InlineKeyboardButton(
+                            "❌ No", callback_data="rclone_discard"
+                        ),
                     ]
                 ]
             ),
             quote=True,
         )
+
         return
 
     if currentFileNameExt == "srt":
@@ -272,13 +279,15 @@ async def video_handler(c: Client, m: Message):
 
 @mergeApp.on_message(filters.photo & filters.private)
 async def photo_handler(c: Client, m: Message):
-    if m.from_user.id != Config.OWNER:
-        if await database.allowedUser(uid=m.from_user.id) is False:
-            res = await m.reply_text(
-                text=f"Hi **{m.from_user.first_name}**\n\n 🛡️ Unfortunately you can't use me\n\n**Contact: 🈲 @{Config.OWNER_USERNAME}** ",
-                quote=True,
-            )
-            return
+    if (
+        m.from_user.id != Config.OWNER
+        and await database.allowedUser(uid=m.from_user.id) is False
+    ):
+        res = await m.reply_text(
+            text=f"Hi **{m.from_user.first_name}**\n\n 🛡️ Unfortunately you can't use me\n\n**Contact: 🈲 @{Config.OWNER_USERNAME}** ",
+            quote=True,
+        )
+        return
     thumbnail = m.photo.file_id
     msg = await m.reply_text("Saving Thumbnail. . . .", quote=True)
     await database.saveThumb(m.from_user.id, thumbnail)
@@ -403,8 +412,13 @@ async def MakeButtons(bot: Client, m: Message, db: dict):
                     )
                 ]
             )
-    markup.append([InlineKeyboardButton("🔗 Merge Now", callback_data="merge")])
-    markup.append([InlineKeyboardButton("💥 Clear Files", callback_data="cancel")])
+    markup.extend(
+        (
+            [InlineKeyboardButton("🔗 Merge Now", callback_data="merge")],
+            [InlineKeyboardButton("💥 Clear Files", callback_data="cancel")],
+        )
+    )
+
     return markup
 
 

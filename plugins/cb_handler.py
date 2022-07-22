@@ -145,17 +145,26 @@ async def cb_handler(c: Client, cb: CallbackQuery):
     elif cb.data == "videoS":
         UPLOAD_AS_DOC.update({f"{cb.from_user.id}": False})
         await cb.message.edit(
-            text=f"Do you want to rename? Default file name is **[@yashoswalyo]_softmuxed_video.mkv**",
+            text="Do you want to rename? Default file name is **[@yashoswalyo]_softmuxed_video.mkv**",
             reply_markup=InlineKeyboardMarkup(
                 [
                     [
-                        InlineKeyboardButton("👆 Default", callback_data="renameS_NO"),
-                        InlineKeyboardButton("✍️ Rename", callback_data="renameS_YES"),
+                        InlineKeyboardButton(
+                            "👆 Default", callback_data="renameS_NO"
+                        ),
+                        InlineKeyboardButton(
+                            "✍️ Rename", callback_data="renameS_YES"
+                        ),
                     ],
-                    [InlineKeyboardButton("⛔ Cancel ⛔", callback_data="cancel")],
+                    [
+                        InlineKeyboardButton(
+                            "⛔ Cancel ⛔", callback_data="cancel"
+                        )
+                    ],
                 ]
             ),
         )
+
         return
 
     elif cb.data.startswith("rclone_"):
@@ -289,7 +298,6 @@ async def cb_handler(c: Client, cb: CallbackQuery):
                         ]
                     ),
                 )
-            return
         else:
             sMessId = queueDB.get(cb.from_user.id)["subtitles"][sIndex]
             s = await c.get_messages(chat_id=cb.message.chat.id, message_ids=sMessId)
@@ -331,13 +339,12 @@ async def cb_handler(c: Client, cb: CallbackQuery):
                         ]
                     ),
                 )
-            return
-
+        return
     elif cb.data.startswith("addSub_"):
         sIndex = int(cb.data.split(sep="_")[1])
         vMessId = queueDB.get(cb.from_user.id)["videos"][sIndex]
         rmess = await cb.message.edit(
-            text=f"Send me a subtitle file, you have 1 minute",
+            text="Send me a subtitle file, you have 1 minute",
             reply_markup=InlineKeyboardMarkup(
                 [
                     [
@@ -348,6 +355,7 @@ async def cb_handler(c: Client, cb: CallbackQuery):
                 ]
             ),
         )
+
         subs: Message = await c.listen(
             cb.message.chat.id, filters="filters.document", timeout=60
         )
@@ -355,18 +363,20 @@ async def cb_handler(c: Client, cb: CallbackQuery):
             media = subs.document or subs.video
             if media.file_name.rsplit(".")[-1] not in "srt":
                 await subs.reply_text(
-                    text=f"Please go back first",
+                    text="Please go back first",
                     reply_markup=InlineKeyboardMarkup(
                         [
                             [
                                 InlineKeyboardButton(
-                                    "🔙 Back", callback_data=f"showFileName_{vMessId}"
+                                    "🔙 Back",
+                                    callback_data=f"showFileName_{vMessId}",
                                 )
                             ]
                         ]
                     ),
                     quote=True,
                 )
+
                 return
             queueDB.get(cb.from_user.id)["subtitles"][sIndex] = subs.id
             await subs.reply_text(
@@ -391,7 +401,7 @@ async def cb_handler(c: Client, cb: CallbackQuery):
         vMessId = queueDB.get(cb.from_user.id)["videos"][sIndex]
         queueDB.get(cb.from_user.id)["subtitles"][sIndex] = None
         await cb.message.edit(
-            text=f"Subtitle Removed Now go back or send next video",
+            text="Subtitle Removed Now go back or send next video",
             reply_markup=InlineKeyboardMarkup(
                 [
                     [
@@ -402,6 +412,7 @@ async def cb_handler(c: Client, cb: CallbackQuery):
                 ]
             ),
         )
+
         print("Sub removed from list")
         return
 

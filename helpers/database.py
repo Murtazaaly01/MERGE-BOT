@@ -24,8 +24,7 @@ async def addUser(uid, fname, lname):
 
 
 async def broadcast():
-    a = Database.mergebot.users.find({})
-    return a
+    return Database.mergebot.users.find({})
 
 
 async def allowUser(uid,fname,lname):

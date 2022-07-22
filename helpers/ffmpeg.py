@@ -18,7 +18,7 @@ async def MergeVideo(input_file: str, user_id: int, message: Message, format_: s
     :param `format_`: Pass File Extension.
     :return: This will return Merged Video File Path
     """
-    output_vid = f"downloads/{str(user_id)}/[@yashoswalyo].{format_.lower()}"
+    output_vid = f"downloads/{user_id}/[@yashoswalyo].{format_.lower()}"
     file_generator_command = [
         "ffmpeg",
         "-f",
@@ -52,10 +52,7 @@ async def MergeVideo(input_file: str, user_id: int, message: Message, format_: s
     t_response = stdout.decode().strip()
     print(e_response)
     print(t_response)
-    if os.path.lexists(output_vid):
-        return output_vid
-    else:
-        return None
+    return output_vid if os.path.lexists(output_vid) else None
 
 
 async def MergeSub(filePath: str, subPath: str, user_id):
@@ -71,16 +68,16 @@ async def MergeSub(filePath: str, subPath: str, user_id):
     """
     print("Generating mux command")
     input_files = ""
-    maps = ""
     metadata = ""
     videoData = ffmpeg.probe(filename=filePath)
     videoStreamsData = videoData.get("streams")
-    subTrack = 0
-    for i in range(len(videoStreamsData)):
-        if videoStreamsData[i]["codec_type"] == "subtitle":
-            subTrack += 1
+    subTrack = sum(
+        videoStreamsData[i]["codec_type"] == "subtitle"
+        for i in range(len(videoStreamsData))
+    )
+
     input_files += f"-i '{filePath}' -i '{subPath}' "
-    maps += f"-map 1:s "
+    maps = "" + "-map 1:s "
     metadata += f"-metadata:s:s:{subTrack} title='Track {subTrack+1} - tg@yashoswalyo' "
     subTrack += 1
     print("Sub muxing")
@@ -88,10 +85,10 @@ async def MergeSub(filePath: str, subPath: str, user_id):
         f"ffmpeg -hide_banner {input_files}-map 0:v:0 -map 0:a -map 0:s? {maps}{metadata}-c:v copy -c:a copy -c:s srt './downloads/{str(user_id)}/[@yashoswalyo]_softmuxed_video.mkv' ",
         shell=True,
     )
-    orgFilePath = shutil.move(
-        f"./downloads/{str(user_id)}/[@yashoswalyo]_softmuxed_video.mkv", filePath
+    return shutil.move(
+        f"./downloads/{str(user_id)}/[@yashoswalyo]_softmuxed_video.mkv",
+        filePath,
     )
-    return orgFilePath
 
 
 async def MergeSubNew(filePath: str, subPath: str, user_id, file_list):
@@ -107,17 +104,16 @@ async def MergeSubNew(filePath: str, subPath: str, user_id, file_list):
     returns: Merged Video File Path
     """
     print("Generating mux command")
-    input_files = ""
     maps = ""
     metadata = ""
     videoData = ffmpeg.probe(filename=filePath)
     videoStreamsData = videoData.get("streams")
-    subTrack = 0
-    for i in range(len(videoStreamsData)):
-        if videoStreamsData[i]["codec_type"] == "subtitle":
-            subTrack += 1
-    for i in file_list:
-        input_files += f"-i '{i}' "
+    subTrack = sum(
+        videoStreamsData[i]["codec_type"] == "subtitle"
+        for i in range(len(videoStreamsData))
+    )
+
+    input_files = "".join(f"-i '{i}' " for i in file_list)
     for j in range(1, (len(file_list))):
         maps += f"-map {j}:s "
         metadata += (
@@ -161,10 +157,7 @@ async def cult_small_video(video_file, output_directory, start_time, end_time, f
     t_response = stdout.decode().strip()
     print(e_response)
     print(t_response)
-    if os.path.lexists(out_put_file_name):
-        return out_put_file_name
-    else:
-        return None
+    return out_put_file_name if os.path.lexists(out_put_file_name) else None
 
 
 async def take_screen_shot(video_file, output_directory, ttl):
@@ -180,7 +173,7 @@ async def take_screen_shot(video_file, output_directory, ttl):
     returns: This will return path of screenshot
     """
     # https://stackoverflow.com/a/13891070/4723940
-    out_put_file_name = os.path.join(output_directory, str(time.time()) + ".jpg")
+    out_put_file_name = os.path.join(output_directory, f"{str(time.time())}.jpg")
     if video_file.upper().endswith(
         (
             "MKV",
@@ -220,7 +213,4 @@ async def take_screen_shot(video_file, output_directory, ttl):
         e_response = stderr.decode().strip()
         t_response = stdout.decode().strip()
     #
-    if os.path.exists(out_put_file_name):
-        return out_put_file_name
-    else:
-        return None
+    return out_put_file_name if os.path.exists(out_put_file_name) else None

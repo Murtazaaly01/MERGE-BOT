@@ -26,9 +26,21 @@ async def uploadVideo(
     try:
         sent_ = None
         prog = Progress(cb.from_user.id, c, cb.message)
-        if upload_mode is False:
-            c_time = time.time()
-            sent_: Message = await c.send_video(
+        c_time = time.time()
+        sent_: Message = (
+            await c.send_document(
+                chat_id=cb.message.chat.id,
+                document=merged_video_path,
+                thumb=video_thumbnail,
+                caption=f"`{merged_video_path.rsplit('/',1)[-1]}`",
+                progress=prog.progress_for_pyrogram,
+                progress_args=(
+                    f"Uploading: `{merged_video_path.rsplit('/',1)[-1]}`",
+                    c_time,
+                ),
+            )
+            if upload_mode
+            else await c.send_video(
                 chat_id=cb.message.chat.id,
                 video=merged_video_path,
                 height=height,
@@ -42,26 +54,14 @@ async def uploadVideo(
                     c_time,
                 ),
             )
-        else:
-            c_time = time.time()
-            sent_: Message = await c.send_document(
-                chat_id=cb.message.chat.id,
-                document=merged_video_path,
-                thumb=video_thumbnail,
-                caption=f"`{merged_video_path.rsplit('/',1)[-1]}`",
-                progress=prog.progress_for_pyrogram,
-                progress_args=(
-                    f"Uploading: `{merged_video_path.rsplit('/',1)[-1]}`",
-                    c_time,
-                ),
-            )
+        )
+
     except Exception as err:
         print(err)
         await cb.message.edit("Failed to upload")
-    if sent_ is not None:
-        if Config.LOGCHANNEL is not None:
-            media = sent_.video or sent_.document
-            await sent_.copy(
-                chat_id=Config.LOGCHANNEL,
-                caption=f"`{media.file_name}`\n\nMerged for: {cb.from_user.mention}",
-            )
+    if sent_ is not None and Config.LOGCHANNEL is not None:
+        media = sent_.video or sent_.document
+        await sent_.copy(
+            chat_id=Config.LOGCHANNEL,
+            caption=f"`{media.file_name}`\n\nMerged for: {cb.from_user.mention}",
+        )

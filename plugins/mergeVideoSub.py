@@ -21,7 +21,7 @@ from PIL import Image
 async def mergeSub(c: Client, cb: CallbackQuery, new_file_name: str):
     print()
     omess = cb.message.reply_to_message
-    vid_list = list()
+    vid_list = []
     await cb.message.edit("⭕ Processing...")
     duration = 0
     list_message_ids = queueDB.get(cb.from_user.id)["videos"]
@@ -72,7 +72,7 @@ async def mergeSub(c: Client, cb: CallbackQuery, new_file_name: str):
         user_id=cb.from_user.id,
         file_list=vid_list,
     )
-    _cache = list()
+    _cache = []
     if subbed_video is None:
         await cb.message.edit("❌ Failed to add subs video !")
         await delete_all(root=f"./downloads/{str(cb.from_user.id)}")
